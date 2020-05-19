@@ -27,6 +27,7 @@
 #include <Core/Toolbox.h>
 
 #include <gdcmImageChangeTransferSyntax.h>
+#include <gdcmImageChangePhotometricInterpretation.h>
 #include <gdcmImageReader.h>
 #include <gdcmImageWriter.h>
 #include <gdcmUIDGenerator.h>
@@ -173,6 +174,71 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
 
 
 #if ORTHANC_PLUGINS_VERSION_IS_ABOVE(1, 7, 0)
+
+static bool IsYbrToRgbConversionNeeded(const gdcm::Image& image)
+{
+  return (image.GetPhotometricInterpretation().GetSamplesPerPixel() == 3 &&
+          image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::YBR_FULL &&
+          // Only applicable to Little Endian uncompressed transfer syntaxes
+          (image.GetTransferSyntax() == gdcm::TransferSyntax::ImplicitVRLittleEndian ||
+           image.GetTransferSyntax() == gdcm::TransferSyntax::ExplicitVRLittleEndian));
+}
+
+
+static void AnswerTranscoded(OrthancPluginMemoryBuffer* transcoded /* out */,
+                             const gdcm::Image&         image,
+                             const gdcm::ImageReader&   reader)
+{
+  gdcm::ImageWriter writer;
+  writer.SetImage(image);
+  writer.SetFile(reader.GetFile());
+
+  std::stringstream ss;
+  writer.SetStream(ss);
+  if (writer.Write())
+  {
+    std::string s = ss.str();
+    OrthancPlugins::MemoryBuffer orthancBuffer(s.empty() ? NULL : s.c_str(), s.size());
+    *transcoded = orthancBuffer.Release();
+  }
+  else
+  {
+    throw Orthanc::OrthancException(Orthanc::ErrorCode_InternalError,
+                                    "GDCM cannot serialize the image");
+  }
+}
+
+
+static void ConvertYbrToRgb(OrthancPluginMemoryBuffer* transcoded /* out */,
+                            const gdcm::Image&         image,
+                            const gdcm::ImageReader&   reader)
+{
+  /**
+   * Fix the photometric interpretation, typically needed for some
+   * multiframe US images (as the one in BitBucket issue 164). Also
+   * check out the "Plugins/Samples/GdcmDecoder/GdcmImageDecoder.cpp"
+   * file in the source distribution of Orthanc, and Osimis issue
+   * WVB-319 ("Some images are not loading in US_MF").
+   **/
+
+  assert(IsYbrToRgbConversionNeeded(image));
+
+  gdcm::ImageChangePhotometricInterpretation change;
+  change.SetPhotometricInterpretation(gdcm::PhotometricInterpretation::RGB);
+  change.SetInput(image);
+
+  if (change.Change())
+  {
+    AnswerTranscoded(transcoded, change.GetOutput(), reader);
+  }
+  else
+  {
+    throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented,
+                                    "GDCM cannot change the photometric interpretation");
+  }
+}
+
+
 OrthancPluginErrorCode TranscoderCallback(
   OrthancPluginMemoryBuffer* transcoded /* out */,
   uint8_t*                   hasSopInstanceUidChanged /* out */,
@@ -218,8 +284,16 @@ OrthancPluginErrorCode TranscoderCallback(
       {
         // Same transfer syntax as in the source, return a copy of the
         // source buffer
-        OrthancPlugins::MemoryBuffer orthancBuffer(buffer, size);
-        *transcoded = orthancBuffer.Release();
+        if (IsYbrToRgbConversionNeeded(reader.GetImage()))
+        {
+          ConvertYbrToRgb(transcoded, reader.GetImage(), reader);
+        }
+        else
+        {
+          OrthancPlugins::MemoryBuffer orthancBuffer(buffer, size);
+          *transcoded = orthancBuffer.Release();
+        }
+        
         *hasSopInstanceUidChanged = 0;
         return OrthancPluginErrorCode_Success;
       }
@@ -236,6 +310,11 @@ OrthancPluginErrorCode TranscoderCallback(
 
         if (change.Change())
         {
+          if (change.GetOutput().GetTransferSyntax() != syntax)
+          {
+            throw Orthanc::OrthancException(Orthanc::ErrorCode_InternalError);
+          }
+         
           if (syntax == gdcm::TransferSyntax::JPEGBaselineProcess1 ||
               syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4 ||
               syntax == gdcm::TransferSyntax::JPEGLSNearLossless ||
@@ -263,25 +342,16 @@ OrthancPluginErrorCode TranscoderCallback(
       
           // GDCM was able to change the transfer syntax, serialize it
           // to the output buffer
-          gdcm::ImageWriter writer;
-          writer.SetImage(change.GetOutput());
-          writer.SetFile(reader.GetFile());
-
-          std::stringstream ss;
-          writer.SetStream(ss);
-          if (writer.Write())
+          if (IsYbrToRgbConversionNeeded(change.GetOutput()))
           {
-            std::string s = ss.str();
-            OrthancPlugins::MemoryBuffer orthancBuffer(s.empty() ? NULL : s.c_str(), s.size());
-            *transcoded = orthancBuffer.Release();
-
-            return OrthancPluginErrorCode_Success;
+            ConvertYbrToRgb(transcoded, change.GetOutput(), reader);
           }
           else
           {
-            throw Orthanc::OrthancException(Orthanc::ErrorCode_InternalError,
-                                            "GDCM cannot serialize the image");
+            AnswerTranscoded(transcoded, change.GetOutput(), reader);
           }
+
+          return OrthancPluginErrorCode_Success;
         }
       }
     }

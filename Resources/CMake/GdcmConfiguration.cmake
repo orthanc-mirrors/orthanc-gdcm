@@ -77,7 +77,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     set(BUILD_COMMAND BUILD_COMMAND
       ${CMAKE_MAKE_PROGRAM} ${MAKE_PARALLEL}
       gdcmMSFF gdcmcharls gdcmDICT gdcmDSED gdcmIOD gdcmjpeg8
-      gdcmjpeg12 gdcmjpeg16 gdcmopenjp2 gdcmzlib gdcmCommon gdcmexpat)
+      gdcmjpeg12 gdcmjpeg16 gdcmopenjp2 gdcmzlib gdcmCommon gdcmexpat gdcmuuid)
   endif()
 
   include(ExternalProject)
@@ -116,8 +116,17 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     #${Prefix}socketxx${Suffix}
     #${Prefix}gdcmMEXD${Suffix}  # DICOM Networking, unneeded by Orthanc plugins
     #${Prefix}gdcmgetopt${Suffix}
-    #${Prefix}gdcmuuid${Suffix}
     )
+
+  if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    list(APPEND GDCM_LIBRARIES
+      rpcrt4   # For UUID stuff
+      )
+  else()
+    list(APPEND GDCM_LIBRARIES
+      ${Prefix}gdcmuuid${Suffix}
+      )
+  endif()
 
   ExternalProject_Get_Property(GDCM binary_dir)
   include_directories(${binary_dir}/Source/Common)
