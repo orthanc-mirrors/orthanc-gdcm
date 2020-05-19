@@ -241,7 +241,6 @@ static void ConvertYbrToRgb(OrthancPluginMemoryBuffer* transcoded /* out */,
 
 OrthancPluginErrorCode TranscoderCallback(
   OrthancPluginMemoryBuffer* transcoded /* out */,
-  uint8_t*                   hasSopInstanceUidChanged /* out */,
   const void*                buffer,
   uint64_t                   size,
   const char* const*         allowedSyntaxes,
@@ -294,7 +293,6 @@ OrthancPluginErrorCode TranscoderCallback(
           *transcoded = orthancBuffer.Release();
         }
         
-        *hasSopInstanceUidChanged = 0;
         return OrthancPluginErrorCode_Success;
       }
     }
@@ -333,11 +331,6 @@ OrthancPluginErrorCode TranscoderCallback(
             gdcm::Keywords::SOPInstanceUID sopInstanceUid;
             sopInstanceUid.SetValue(uid);
             reader.GetFile().GetDataSet().Replace(sopInstanceUid.GetAsDataElement());
-            *hasSopInstanceUidChanged = 1;
-          }
-          else
-          {
-            *hasSopInstanceUidChanged = 0;
           }
       
           // GDCM was able to change the transfer syntax, serialize it
