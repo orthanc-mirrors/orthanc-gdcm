@@ -220,7 +220,7 @@ OrthancPluginErrorCode TranscoderCallback(
         // source buffer
         OrthancPlugins::MemoryBuffer orthancBuffer(buffer, size);
         *transcoded = orthancBuffer.Release();
-        *hasSopInstanceUidChanged = false;
+        *hasSopInstanceUidChanged = 0;
         return OrthancPluginErrorCode_Success;
       }
     }
