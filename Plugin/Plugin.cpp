@@ -30,6 +30,7 @@
 #include <gdcmImageReader.h>
 #include <gdcmImageWriter.h>
 #include <gdcmUIDGenerator.h>
+#include <gdcmTagKeywords.h>
 
 
 static OrthancPlugins::GdcmDecoderCache  cache_;
@@ -250,7 +251,7 @@ OrthancPluginErrorCode TranscoderCallback(
                                               "GDCM cannot generate a UID");
             }
 
-            gdcm::Attribute<0x0008,0x0018> sopInstanceUid;
+            gdcm::Keywords::SOPInstanceUID sopInstanceUid;
             sopInstanceUid.SetValue(uid);
             reader.GetFile().GetDataSet().Replace(sopInstanceUid.GetAsDataElement());
             *hasSopInstanceUidChanged = 1;

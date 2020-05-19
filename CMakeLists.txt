@@ -45,6 +45,7 @@ set(ORTHANC_FRAMEWORK_ROOT "" CACHE STRING "Path to the Orthanc source directory
 # Advanced parameters to fine-tune linking against system libraries
 set(USE_SYSTEM_GDCM ON CACHE BOOL "Use the system version of Grassroot DICOM (GDCM)")
 set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
+set(ORTHANC_SDK_VERSION "0.9.5" CACHE STRING "Version of the Orthanc plugin SDK to use, if not using the system version (can be \"0.9.5\", or \"framework\")")
 
 
 # Download and setup the Orthanc framework
@@ -65,7 +66,13 @@ include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
 
 # Check that the Orthanc SDK headers are available
 if (STATIC_BUILD OR NOT USE_SYSTEM_ORTHANC_SDK)
-  include_directories(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Sdk-0.9.5)
+  if (ORTHANC_SDK_VERSION STREQUAL "0.9.5")
+    include_directories(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Sdk-0.9.5)
+  elseif (ORTHANC_SDK_VERSION STREQUAL "framework")
+    include_directories(${ORTHANC_ROOT}/Plugins/Include)
+  else()
+    message(FATAL_ERROR "Unsupported version of the Orthanc plugin SDK: ${ORTHANC_SDK_VERSION}")
+  endif()
 else ()
   CHECK_INCLUDE_FILE_CXX(orthanc/OrthancCPlugin.h HAVE_ORTHANC_H)
   if (NOT HAVE_ORTHANC_H)
