@@ -32,7 +32,7 @@ http://book.orthanc-server.com/plugins/gdcm.html
 Licensing
 ---------
 
-The GDCM plugin for Orthanc is licensed under the GPL license.
+The GDCM plugin for Orthanc is licensed under the GPLv3 license.
 
 We also kindly ask scientific works and clinical studies that make
 use of Orthanc to cite Orthanc in their associated publications.

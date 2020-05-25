@@ -1,5 +1,5 @@
 Pending changes in the mainline
 ===============================
 
-* Initial release
+* Initial release, by migration out of the Orthanc samples
 * Upgrade to GDCM 3.0.6 for static builds
