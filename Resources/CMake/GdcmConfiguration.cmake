@@ -90,8 +90,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
 
   include(ExternalProject)
   externalproject_add(GDCM
-    URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-3.0.6.tar.gz"
-    URL_MD5 "d365e0950da9cb40fee437d48d66d62b"
+    URL "${GDCM_URL}"
+    URL_MD5 "${GDCM_MD5}"
     TIMEOUT 60
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} ${Flags}
     ${BUILD_COMMAND}    # Customize "make", only for Linux Standard Base (*)
