@@ -31,6 +31,7 @@
 #include <gdcmImageReader.h>
 #include <gdcmImageWriter.h>
 #include <gdcmUIDGenerator.h>
+#include <gdcmVersion.h>
 #include <gdcmTagKeywords.h>
 
 
@@ -458,6 +459,8 @@ extern "C"
 
       if (enabled)
       {
+        LOG(WARNING) << "Version of GDCM: " << gdcm::Version::GetVersion();
+        
         if (!hasThrottling_)
         {
           LOG(WARNING) << "GDCM throttling is disabled";
