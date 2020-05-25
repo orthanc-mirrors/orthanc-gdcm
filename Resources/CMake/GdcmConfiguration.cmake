@@ -4,20 +4,28 @@
 # Copyright (C) 2017-2020 Osimis S.A., Belgium
 #
 # This program is free software: you can redistribute it and/or
-# modify it under the terms of the GNU Affero General Public License
-# as published by the Free Software Foundation, either version 3 of
-# the License, or (at your option) any later version.
-#
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# 
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
+  if (USE_LEGACY_GDCM)
+    set(GDCM_URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-2.8.9.tar.gz")
+    set(GDCM_MD5 "aeb00e0cb5375d454010a72e2e0f6154")
+  else()
+    set(GDCM_URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-3.0.6.tar.gz")
+    set(GDCM_MD5 "d365e0950da9cb40fee437d48d66d62b")
+  endif()
+  
   if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
       ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
       ${CMAKE_SYSTEM_NAME} STREQUAL "kFreeBSD")

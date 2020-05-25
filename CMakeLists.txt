@@ -24,11 +24,10 @@ project(OrthancGdcm)
 SET(PLUGIN_VERSION "mainline" CACHE STRING "Version of the plugin")
 
 if (PLUGIN_VERSION STREQUAL "mainline")
-  #set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "transcoding")  # TODO => replace by "mainline"
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "hg")
 else()
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.6.1")
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.7.0")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
 endif()
 
@@ -41,11 +40,12 @@ set(ORTHANC_FRAMEWORK_SOURCE "${ORTHANC_FRAMEWORK_DEFAULT_SOURCE}" CACHE STRING 
 set(ORTHANC_FRAMEWORK_VERSION "${ORTHANC_FRAMEWORK_DEFAULT_VERSION}" CACHE STRING "Version of the Orthanc framework")
 set(ORTHANC_FRAMEWORK_ARCHIVE "" CACHE STRING "Path to the Orthanc archive, if ORTHANC_FRAMEWORK_SOURCE is \"archive\"")
 set(ORTHANC_FRAMEWORK_ROOT "" CACHE STRING "Path to the Orthanc source directory, if ORTHANC_FRAMEWORK_SOURCE is \"path\"")
+set(USE_LEGACY_GDCM OFF CACHE BOOL "Use the old branch 2.8.x of GDCM for static builds, which does not require a C++11 compiler (for LSB and old versions of Visual Studio)")
 
 # Advanced parameters to fine-tune linking against system libraries
 set(USE_SYSTEM_GDCM ON CACHE BOOL "Use the system version of Grassroot DICOM (GDCM)")
 set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
-set(ORTHANC_SDK_VERSION "0.9.5" CACHE STRING "Version of the Orthanc plugin SDK to use, if not using the system version (can be \"0.9.5\", or \"framework\")")
+set(ORTHANC_SDK_VERSION "1.7.0" CACHE STRING "Version of the Orthanc plugin SDK to use, if not using the system version (can be \"0.9.5\", \"1.7.0\", or \"framework\")")
 
 
 # Download and setup the Orthanc framework
@@ -68,6 +68,8 @@ include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
 if (STATIC_BUILD OR NOT USE_SYSTEM_ORTHANC_SDK)
   if (ORTHANC_SDK_VERSION STREQUAL "0.9.5")
     include_directories(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Sdk-0.9.5)
+  elseif (ORTHANC_SDK_VERSION STREQUAL "1.7.0")
+    include_directories(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Sdk-1.7.0)
   elseif (ORTHANC_SDK_VERSION STREQUAL "framework")
     include_directories(${ORTHANC_ROOT}/Plugins/Include)
   else()
