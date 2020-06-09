@@ -401,7 +401,7 @@ extern "C"
     try
     {
       OrthancPlugins::SetGlobalContext(context);
-      Orthanc::Logging::Initialize(context);
+      Orthanc::Logging::InitializePluginContext(context);
       LOG(INFO) << "Initializing the decoder/transcoder of medical images using GDCM";
 
       /* Check the version of the Orthanc core */
