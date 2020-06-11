@@ -57,7 +57,10 @@ set(ENABLE_MODULE_IMAGES OFF CACHE INTERNAL "")
 set(ENABLE_MODULE_JOBS OFF CACHE INTERNAL "")
 
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkConfiguration.cmake)
-include_directories(${ORTHANC_ROOT})
+include_directories(
+  ${ORTHANC_ROOT}/Core/
+  ${ORTHANC_ROOT}/Plugins/Samples/Common/
+  )
 
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
 

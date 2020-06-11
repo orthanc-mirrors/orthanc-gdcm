@@ -23,8 +23,8 @@
 
 #include "GdcmImageDecoder.h"
 
-#include <Core/Compatibility.h>
-#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
+#include <Compatibility.h>
+#include <OrthancPluginCppWrapper.h>
 
 #include <boost/thread.hpp>
 

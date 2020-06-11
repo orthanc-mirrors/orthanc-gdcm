@@ -21,7 +21,7 @@
 
 #include "GdcmImageDecoder.h"
 
-#include <Core/Compatibility.h>
+#include <Compatibility.h>
 
 #include <gdcmImageReader.h>
 #include <gdcmImageApplyLookupTable.h>

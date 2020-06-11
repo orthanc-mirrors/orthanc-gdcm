@@ -21,10 +21,10 @@
 
 #include "GdcmDecoderCache.h"
 
-#include <Core/Compatibility.h>
-#include <Core/DicomFormat/DicomMap.h>
-#include <Core/MultiThreading/Semaphore.h>
-#include <Core/Toolbox.h>
+#include <Compatibility.h>
+#include <DicomFormat/DicomMap.h>
+#include <MultiThreading/Semaphore.h>
+#include <Toolbox.h>
 
 #include <gdcmImageChangeTransferSyntax.h>
 #include <gdcmImageChangePhotometricInterpretation.h>
