@@ -26,13 +26,14 @@
 #include <MultiThreading/Semaphore.h>
 #include <Toolbox.h>
 
-#include <gdcmImageChangeTransferSyntax.h>
+#include <gdcmFileExplicitFilter.h>
 #include <gdcmImageChangePhotometricInterpretation.h>
+#include <gdcmImageChangeTransferSyntax.h>
 #include <gdcmImageReader.h>
 #include <gdcmImageWriter.h>
+#include <gdcmTagKeywords.h>
 #include <gdcmUIDGenerator.h>
 #include <gdcmVersion.h>
-#include <gdcmTagKeywords.h>
 
 
 static OrthancPlugins::GdcmDecoderCache  cache_;
@@ -296,6 +297,23 @@ OrthancPluginErrorCode TranscoderCallback(
         
         return OrthancPluginErrorCode_Success;
       }
+    }
+
+    if (reader.GetImage().GetTransferSyntax().IsImplicit())
+    {
+      /**
+       * New in release 1.1. This fixes the transcoding of DICOM files
+       * encoded using an implicit transfer syntax. This is similar to
+       * enabling the command-line option "-U" or "--use-dict" of the
+       * gdcmconv tool (cf. GDCM-3.0.6/Applications/Cxx/gdcmconv.cxx).
+       * If this conversion is not done, the value representations are
+       * left to the "UN" VR, which prevents Orthanc from accessing
+       * tags such as "Study|Series|SOP Instance UID" (because Orthanc
+       * considers "UN" as a binary value).
+       **/
+      gdcm::FileExplicitFilter toExplicit;
+      toExplicit.SetFile(reader.GetFile());
+      toExplicit.Change();
     }
 
     for (uint32_t i = 0; i < countSyntaxes; i++)
