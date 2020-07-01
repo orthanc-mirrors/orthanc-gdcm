@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <OrthancPluginCppWrapper.h>
+#include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 
 #include <stdint.h>
 #include <boost/noncopyable.hpp>

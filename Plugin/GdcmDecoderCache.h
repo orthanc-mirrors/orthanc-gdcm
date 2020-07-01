@@ -23,8 +23,9 @@
 
 #include "GdcmImageDecoder.h"
 
+#include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
+
 #include <Compatibility.h>
-#include <OrthancPluginCppWrapper.h>
 
 #include <boost/thread.hpp>
 
