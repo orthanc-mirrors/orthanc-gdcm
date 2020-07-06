@@ -49,19 +49,25 @@ set(ORTHANC_SDK_VERSION "1.7.0" CACHE STRING "Version of the Orthanc plugin SDK 
 
 
 # Download and setup the Orthanc framework
-include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/DownloadOrthancFramework.cmake)
-include(${ORTHANC_FRAMEWORK_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
+if (ORTHANC_FRAMEWORK_SOURCE STREQUAL "system")
+  include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/DownloadOrthancFramework.cmake)
+  link_libraries(${ORTHANC_FRAMEWORK_LIBRARIES})
+  
+else()
+  include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/DownloadOrthancFramework.cmake)
+  include(${ORTHANC_FRAMEWORK_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
 
-set(ENABLE_LOCALE OFF CACHE INTERNAL "")      # Disable support for locales (notably in Boost)
-set(ENABLE_MODULE_IMAGES OFF CACHE INTERNAL "")
-set(ENABLE_MODULE_JOBS OFF CACHE INTERNAL "")
+  set(ENABLE_LOCALE OFF CACHE INTERNAL "")      # Disable support for locales (notably in Boost)
+  set(ENABLE_MODULE_IMAGES OFF CACHE INTERNAL "")
+  set(ENABLE_MODULE_JOBS OFF CACHE INTERNAL "")
+  
+  include(${ORTHANC_FRAMEWORK_ROOT}/Resources/CMake/OrthancFrameworkConfiguration.cmake)
+  include_directories(${ORTHANC_FRAMEWORK_ROOT}/Sources)
+endif()
 
-include(${ORTHANC_FRAMEWORK_ROOT}/Resources/CMake/OrthancFrameworkConfiguration.cmake)
-include_directories(
-  ${ORTHANC_FRAMEWORK_ROOT}/Sources/
-  )
 
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
+include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Plugins/OrthancPluginsExports.cmake)
 
 
 # Check that the Orthanc SDK headers are available
