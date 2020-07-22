@@ -22,8 +22,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     set(GDCM_URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-2.8.9.tar.gz")
     set(GDCM_MD5 "aeb00e0cb5375d454010a72e2e0f6154")
   else()
-    set(GDCM_URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-3.0.6.tar.gz")
-    set(GDCM_MD5 "d365e0950da9cb40fee437d48d66d62b")
+    set(GDCM_URL "http://orthanc.osimis.io/ThirdPartyDownloads/gdcm-3.0.7.tar.gz")
+    set(GDCM_MD5 "ecfaa66b03c4d3773209f33000c243c6")
   endif()
   
   if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
