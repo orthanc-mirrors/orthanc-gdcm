@@ -2,7 +2,7 @@ Pending changes in the mainline
 ===============================
 
 
-Version 1.0 (2020-08-05)
+Version 1.1 (2020-08-05)
 ========================
 
 * Fix transcoding of DICOM files encoded using an implicit transfer syntax
