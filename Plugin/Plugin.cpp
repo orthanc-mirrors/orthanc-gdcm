@@ -23,6 +23,7 @@
 
 #include <Compatibility.h>
 #include <DicomFormat/DicomMap.h>
+#include <Logging.h>
 #include <MultiThreading/Semaphore.h>
 #include <Toolbox.h>
 
