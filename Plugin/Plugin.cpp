@@ -322,6 +322,18 @@ OrthancPluginErrorCode TranscoderCallback(
       gdcm::TransferSyntax syntax(gdcm::TransferSyntax::GetTSType(allowedSyntaxes[i]));
       if (syntax.IsValid())
       {
+        if (reader.GetImage().GetPixelFormat().GetBitsStored() == 16u &&
+            syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4)
+        {
+          /**
+           * This is a temporary workaround for issue #513 in GDCM:
+           * https://sourceforge.net/p/gdcm/bugs/513/
+           * https://groups.google.com/g/orthanc-users/c/xt9hwpj6mlQ
+           **/
+          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented,
+                                          "Transcoding 16bit images to 1.2.840.10008.1.2.4.51 might lead to a crash in GDCM");
+        }
+        
         gdcm::ImageChangeTransferSyntax change;
         change.SetTransferSyntax(syntax);
         change.SetInput(reader.GetImage());
