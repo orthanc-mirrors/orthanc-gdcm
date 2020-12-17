@@ -1,6 +1,10 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 1.2 (2020-12-17)
+========================
+
 * Temporarily prevent transcoding of 16bpp images to JPEG, as this might crash GDCM
 * Upgrade to GDCM 3.0.8 for static builds
 
