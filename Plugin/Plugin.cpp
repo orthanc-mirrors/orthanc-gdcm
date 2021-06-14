@@ -35,6 +35,7 @@
 #include <gdcmTagKeywords.h>
 #include <gdcmUIDGenerator.h>
 #include <gdcmVersion.h>
+#include <gdcmImageHelper.h>
 
 
 static OrthancPlugins::GdcmDecoderCache  cache_;
@@ -192,6 +193,23 @@ static void AnswerTranscoded(OrthancPluginMemoryBuffer* transcoded /* out */,
                              const gdcm::Image&         image,
                              const gdcm::ImageReader&   reader)
 {
+  /**
+   * In GDCM, if "ForceRescaleInterceptSlope" is "false" (the default
+   * value), the SOP Class UID (0008,0016) might be changed from
+   * 1.2.840.10008.5.1.4.1.1.4 (MR Image Storage) to
+   * 1.2.840.10008.5.1.4.1.1.4.1 (Enhanced MR Image Storage), because
+   * of function "ImageHelper::ComputeMediaStorageFromModality()" that
+   * is called by "ImageWriter::ComputeTargetMediaStorage()". But,
+   * changing the SOP Class UID is unexpected if doing transcoding.
+   *
+   * As another side-effect, the DICOM tags "ImagePositionPatient"
+   * (0020,0032) and "ImageOrientationPatient" (0020,0037) are removed
+   * from the root of the dataset, and moved into subsequence "Shared
+   * Functional Groups Sequence" (5200,9229). This leads to issue
+   * LSD-598.
+   **/
+  gdcm::ImageHelper::SetForceRescaleInterceptSlope(true);
+
   gdcm::ImageWriter writer;
   writer.SetImage(image);
   writer.SetFile(reader.GetFile());

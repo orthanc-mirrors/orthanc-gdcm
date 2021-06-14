@@ -1,6 +1,9 @@
 Pending changes in the mainline
 ===============================
 
+* Prevent changing SOP class UID from "MR Image Storage" to "Enhanced
+  MR Image Storage" during the transcoding
+
 
 Version 1.2 (2020-12-17)
 ========================
