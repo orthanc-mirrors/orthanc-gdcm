@@ -297,7 +297,7 @@ namespace OrthancPlugins
   }
 
   
-  static void FixPhotometricInterpretation(OrthancImage& image,
+  static void FixPhotometricInterpretation(const OrthancImage& image,
                                            gdcm::PhotometricInterpretation interpretation)
   {
     switch (interpretation)
