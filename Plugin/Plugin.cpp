@@ -344,19 +344,20 @@ OrthancPluginErrorCode TranscoderCallback(
         {
           // Prevent transcoding of 1-bit images, as this might crash GDCM
           // https://groups.google.com/g/orthanc-users/c/xIwrkFRceuE/m/jwxy50djAQAJ
-          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode 1bit images");
+          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode 1bpp DICOM images");
         }
         
         if (reader.GetImage().GetPixelFormat().GetBitsStored() == 16u &&
             syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4)
         {
           /**
-           * This is a temporary workaround for issue #513 in GDCM:
+           * This is a temporary workaround for issue #513 in GDCM
+           * (will be fixed in GDCM 3.0.9):
            * https://sourceforge.net/p/gdcm/bugs/513/
            * https://groups.google.com/g/orthanc-users/c/xt9hwpj6mlQ
            **/
           throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented,
-                                          "Transcoding 16bit images to 1.2.840.10008.1.2.4.51 might lead to a crash in GDCM");
+                                          "Transcoding 16bpp images to 1.2.840.10008.1.2.4.51 might lead to a crash in GDCM");
         }
         
         gdcm::ImageChangeTransferSyntax change;
