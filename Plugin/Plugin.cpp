@@ -340,6 +340,13 @@ OrthancPluginErrorCode TranscoderCallback(
       gdcm::TransferSyntax syntax(gdcm::TransferSyntax::GetTSType(allowedSyntaxes[i]));
       if (syntax.IsValid())
       {
+        if (reader.GetImage().GetPixelFormat().GetBitsAllocated() == 1u)
+        {
+          // Prevent transcoding of 1-bit images, as this might crash GDCM
+          // https://groups.google.com/g/orthanc-users/c/xIwrkFRceuE/m/jwxy50djAQAJ
+          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode 1bit images");
+        }
+        
         if (reader.GetImage().GetPixelFormat().GetBitsStored() == 16u &&
             syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4)
         {
