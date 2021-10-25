@@ -111,6 +111,20 @@ static bool IsTransferSyntaxEnabled(const void* dicom,
   }
 }
 
+static bool IsTransferSyntaxEnabled(const std::string& transferSyntax)
+{
+  if (!restrictTransferSyntaxes_)
+  {
+    return true;
+  }
+
+  if (enabledTransferSyntaxes_.find(transferSyntax) != enabledTransferSyntaxes_.end())
+  {
+    return true;
+  }
+
+  return false;
+}
 
 static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
                                                   const void* dicom,
@@ -270,10 +284,23 @@ OrthancPluginErrorCode TranscoderCallback(
 {
   try
   {
-    if (!IsTransferSyntaxEnabled(buffer, size))
+    std::string sourceTransferSyntax;
+    ExtractTransferSyntax(sourceTransferSyntax, buffer, size);
+
+    bool pluginShouldHandleTranscoding = false;
+    for (uint32_t i = 0; i < countSyntaxes; i++)
     {
-      return OrthancPluginErrorCode_Plugin;
+      if (IsTransferSyntaxEnabled(sourceTransferSyntax) || IsTransferSyntaxEnabled(allowedSyntaxes[i]))
+      {
+        pluginShouldHandleTranscoding = true;
+      }
     }
+
+    if (!pluginShouldHandleTranscoding)
+    {
+      return OrthancPluginErrorCode_Plugin; // not really an error but only way to tell Orthanc that the plugin did not handle transcoding
+    }
+
 
     std::unique_ptr<Orthanc::Semaphore::Locker> locker;
     
