@@ -270,6 +270,11 @@ OrthancPluginErrorCode TranscoderCallback(
 {
   try
   {
+    if (!IsTransferSyntaxEnabled(buffer, size))
+    {
+      return OrthancPluginErrorCode_Plugin;
+    }
+
     std::unique_ptr<Orthanc::Semaphore::Locker> locker;
     
     if (hasThrottling_)
