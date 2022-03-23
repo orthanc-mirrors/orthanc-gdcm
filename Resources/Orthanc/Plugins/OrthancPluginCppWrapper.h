@@ -2,7 +2,8 @@
  * Orthanc - A Lightweight, RESTful DICOM Store
  * Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
  * Department, University Hospital of Liege, Belgium
- * Copyright (C) 2017-2021 Osimis S.A., Belgium
+ * Copyright (C) 2017-2022 Osimis S.A., Belgium
+ * Copyright (C) 2021-2022 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -112,6 +113,12 @@
 #  define HAS_ORTHANC_PLUGIN_STORAGE_COMMITMENT_SCP  1
 #else
 #  define HAS_ORTHANC_PLUGIN_STORAGE_COMMITMENT_SCP  0
+#endif
+
+#if ORTHANC_PLUGINS_VERSION_IS_ABOVE(1, 10, 1)
+#  define HAS_ORTHANC_PLUGIN_WEBDAV  1
+#else
+#  define HAS_ORTHANC_PLUGIN_WEBDAV  0
 #endif
 
 
@@ -299,7 +306,9 @@ namespace OrthancPlugins
     void ToString(std::string& target) const;
 
     void ToJson(Json::Value& target) const;
-  };
+  
+    void ToJsonWithoutComments(Json::Value& target) const;
+};
 
 
   class OrthancConfiguration : public boost::noncopyable
@@ -1245,4 +1254,107 @@ namespace OrthancPlugins
                                     const std::string& transferSyntax);
 #endif
   };
+
+
+
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  class IWebDavCollection : public boost::noncopyable
+  {
+  public:
+    class FileInfo
+    {
+    private:
+      std::string  name_;
+      uint64_t     contentSize_;
+      std::string  mime_;
+      std::string  dateTime_;
+
+    public:
+      FileInfo(const std::string& name,
+               uint64_t contentSize,
+               const std::string& dateTime) :
+        name_(name),
+        contentSize_(contentSize),
+        dateTime_(dateTime)
+      {
+      }
+
+      const std::string& GetName() const
+      {
+        return name_;
+      }
+
+      uint64_t GetContentSize() const
+      {
+        return contentSize_;
+      }
+
+      void SetMimeType(const std::string& mime)
+      {
+        mime_ = mime;
+      }
+
+      const std::string& GetMimeType() const
+      {
+        return mime_;
+      }
+
+      const std::string& GetDateTime() const
+      {
+        return dateTime_;
+      }
+    };
+  
+    class FolderInfo
+    {
+    private:
+      std::string  name_;
+      std::string  dateTime_;
+
+    public:
+      FolderInfo(const std::string& name,
+                 const std::string& dateTime) :
+        name_(name),
+        dateTime_(dateTime)
+      {
+      }
+
+      const std::string& GetName() const
+      {
+        return name_;
+      }
+
+      const std::string& GetDateTime() const
+      {
+        return dateTime_;
+      }
+    };
+  
+    virtual ~IWebDavCollection()
+    {
+    }
+
+    virtual bool IsExistingFolder(const std::vector<std::string>& path) = 0;
+
+    virtual bool ListFolder(std::list<FileInfo>& files,
+                            std::list<FolderInfo>& subfolders,
+                            const std::vector<std::string>& path) = 0;
+  
+    virtual bool GetFile(std::string& content /* out */,
+                         std::string& mime /* out */,
+                         std::string& dateTime /* out */,
+                         const std::vector<std::string>& path) = 0;
+
+    virtual bool StoreFile(const std::vector<std::string>& path,
+                           const void* data,
+                           size_t size) = 0;
+
+    virtual bool CreateFolder(const std::vector<std::string>& path) = 0;
+
+    virtual bool DeleteItem(const std::vector<std::string>& path) = 0;
+
+    static void Register(const std::string& uri,
+                         IWebDavCollection& collection);
+  };
+#endif
 }

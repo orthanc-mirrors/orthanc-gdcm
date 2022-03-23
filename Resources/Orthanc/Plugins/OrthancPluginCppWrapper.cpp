@@ -2,7 +2,8 @@
  * Orthanc - A Lightweight, RESTful DICOM Store
  * Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
  * Department, University Hospital of Liege, Belgium
- * Copyright (C) 2017-2021 Osimis S.A., Belgium
+ * Copyright (C) 2017-2022 Osimis S.A., Belgium
+ * Copyright (C) 2021-2022 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -510,6 +511,22 @@ namespace OrthancPlugins
   }
 
 
+  void OrthancString::ToJsonWithoutComments(Json::Value& target) const
+  {
+    if (str_ == NULL)
+    {
+      LogError("Cannot convert an empty memory buffer to JSON");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
+    }
+
+    if (!ReadJsonWithoutComments(target, str_))
+    {
+      LogError("Cannot convert some memory buffer to JSON");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(BadFileFormat);
+    }
+  }
+
+
   void MemoryBuffer::DicomToJson(Json::Value& target,
                                  OrthancPluginDicomToJsonFormat format,
                                  OrthancPluginDicomToJsonFlags flags,
@@ -539,6 +556,13 @@ namespace OrthancPlugins
                               const std::string& password)
   {
     Clear();
+
+    if (body.size() > 0xffffffffu)
+    {
+      LogError("Cannot handle body size > 4GB");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
+    }
+
     return CheckHttp(OrthancPluginHttpPost(GetGlobalContext(), &buffer_, url.c_str(),
                                            body.c_str(), body.size(),
                                            username.empty() ? NULL : username.c_str(),
@@ -552,6 +576,13 @@ namespace OrthancPlugins
                              const std::string& password)
   {
     Clear();
+
+    if (body.size() > 0xffffffffu)
+    {
+      LogError("Cannot handle body size > 4GB");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
+    }
+
     return CheckHttp(OrthancPluginHttpPut(GetGlobalContext(), &buffer_, url.c_str(),
                                           body.empty() ? NULL : body.c_str(),
                                           body.size(),
@@ -630,7 +661,7 @@ namespace OrthancPlugins
       ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
     }
 
-    str.ToJson(configuration_);
+    str.ToJsonWithoutComments(configuration_);
 
     if (configuration_.type() != Json::objectValue)
     {
@@ -1892,6 +1923,12 @@ namespace OrthancPlugins
       ORTHANC_PLUGINS_THROW_PLUGIN_ERROR_CODE(OrthancPluginErrorCode_ParameterOutOfRange);
     }
 
+    if (body.size() > 0xffffffffu)
+    {
+      LogError("Cannot handle body size > 4GB");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
+    }
+
     OrthancPlugins::MemoryBuffer answer;
     uint16_t status;
     OrthancPluginErrorCode code = OrthancPluginCallPeerApi
@@ -1918,6 +1955,12 @@ namespace OrthancPlugins
     if (index >= index_.size())
     {
       ORTHANC_PLUGINS_THROW_PLUGIN_ERROR_CODE(OrthancPluginErrorCode_ParameterOutOfRange);
+    }
+
+    if (body.size() > 0xffffffffu)
+    {
+      LogError("Cannot handle body size > 4GB");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
     }
 
     OrthancPlugins::MemoryBuffer answer;
@@ -2483,7 +2526,7 @@ namespace OrthancPlugins
         }
         catch (...)
         {
-          return OrthancPluginErrorCode_InternalError;
+          return OrthancPluginErrorCode_Plugin;
         }
       }
     }    
@@ -2569,8 +2612,8 @@ namespace OrthancPlugins
   
   void HttpClient::ClearCredentials()
   {
-    username_.empty();
-    password_.empty();
+    username_.clear();
+    password_.clear();
   }
 
 
@@ -2882,6 +2925,12 @@ namespace OrthancPlugins
     HeadersWrapper headers(headers_);
 
     MemoryBuffer answerBodyBuffer, answerHeadersBuffer;
+
+    if (body.size() > 0xffffffffu)
+    {
+      LogError("Cannot handle body size > 4GB");
+      ORTHANC_PLUGINS_THROW_EXCEPTION(InternalError);
+    }
 
     OrthancPluginErrorCode error = OrthancPluginHttpClient(
       GetGlobalContext(),
@@ -3496,6 +3545,240 @@ namespace OrthancPlugins
       boost::movelib::unique_ptr<DicomInstance> result(new DicomInstance(instance));
       result->toFree_ = true;
       return result.release();
+    }
+  }
+#endif
+
+
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static std::vector<std::string> WebDavConvertPath(uint32_t pathSize,
+                                                    const char* const*  pathItems)
+  {
+    std::vector<std::string> result(pathSize);
+
+    for (uint32_t i = 0; i < pathSize; i++)
+    {
+      result[i] = pathItems[i];
+    }
+
+    return result;
+  }
+#endif
+  
+    
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavIsExistingFolder(uint8_t*            isExisting,
+                                                       uint32_t            pathSize,
+                                                       const char* const*  pathItems,
+                                                       void*               payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+
+    try
+    {
+      *isExisting = (that.IsExistingFolder(WebDavConvertPath(pathSize, pathItems)) ? 1 : 0);
+      return OrthancPluginErrorCode_Success;
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_Plugin;
+    }
+  }
+#endif
+
+  
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavListFolder(uint8_t*                        isExisting,
+                                                 OrthancPluginWebDavCollection*  collection,
+                                                 OrthancPluginWebDavAddFile      addFile,
+                                                 OrthancPluginWebDavAddFolder    addFolder,
+                                                 uint32_t                        pathSize,
+                                                 const char* const*              pathItems,
+                                                 void*                           payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+      
+    try
+    {
+      std::list<IWebDavCollection::FileInfo> files;
+      std::list<IWebDavCollection::FolderInfo> subfolders;
+      
+      if (!that.ListFolder(files, subfolders, WebDavConvertPath(pathSize, pathItems)))
+      {
+        *isExisting = 0;
+      }
+      else
+      {
+        *isExisting = 1;
+      
+        for (std::list<IWebDavCollection::FileInfo>::const_iterator
+               it = files.begin(); it != files.end(); ++it)
+        {
+          OrthancPluginErrorCode code = addFile(
+            collection, it->GetName().c_str(), it->GetContentSize(),
+            it->GetMimeType().c_str(), it->GetDateTime().c_str());
+        
+          if (code != OrthancPluginErrorCode_Success)
+          {
+            return code;
+          }
+        }
+      
+        for (std::list<IWebDavCollection::FolderInfo>::const_iterator it =
+               subfolders.begin(); it != subfolders.end(); ++it)
+        {
+          OrthancPluginErrorCode code = addFolder(
+            collection, it->GetName().c_str(), it->GetDateTime().c_str());
+        
+          if (code != OrthancPluginErrorCode_Success)
+          {
+            return code;
+          }
+        }
+      }
+      
+      return OrthancPluginErrorCode_Success;
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_Plugin;
+    }
+  }
+#endif    
+
+
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavRetrieveFile(OrthancPluginWebDavCollection*   collection,
+                                                   OrthancPluginWebDavRetrieveFile  retrieveFile,
+                                                   uint32_t                         pathSize,
+                                                   const char* const*               pathItems,
+                                                   void*                            payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+
+    try
+    {
+      std::string content, mime, dateTime;
+        
+      if (that.GetFile(content, mime, dateTime, WebDavConvertPath(pathSize, pathItems)))
+      {
+        return retrieveFile(collection, content.empty() ? NULL : content.c_str(),
+                            content.size(), mime.c_str(), dateTime.c_str());
+      }
+      else
+      {
+        // Inexisting file
+        return OrthancPluginErrorCode_Success;
+      }
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_InternalError;
+    }
+  }  
+#endif
+
+
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavStoreFileCallback(uint8_t*            isReadOnly, /* out */
+                                                        uint32_t            pathSize,
+                                                        const char* const*  pathItems,
+                                                        const void*         data,
+                                                        uint64_t            size,
+                                                        void*               payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+
+    try
+    {
+      *isReadOnly = (that.StoreFile(WebDavConvertPath(pathSize, pathItems), data, size) ? 1 : 0);
+      return OrthancPluginErrorCode_Success;
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_InternalError;
+    }
+  }
+#endif
+
+  
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavCreateFolderCallback(uint8_t*            isReadOnly, /* out */
+                                                           uint32_t            pathSize,
+                                                           const char* const*  pathItems,
+                                                           void*               payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+
+    try
+    {
+      *isReadOnly = (that.CreateFolder(WebDavConvertPath(pathSize, pathItems)) ? 1 : 0);
+      return OrthancPluginErrorCode_Success;
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_InternalError;
+    }
+  }
+#endif
+  
+  
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  static OrthancPluginErrorCode WebDavDeleteItemCallback(uint8_t*            isReadOnly, /* out */
+                                                         uint32_t            pathSize,
+                                                         const char* const*  pathItems,
+                                                         void*               payload)
+  {
+    IWebDavCollection& that = *reinterpret_cast<IWebDavCollection*>(payload);
+
+    try
+    {
+      *isReadOnly = (that.DeleteItem(WebDavConvertPath(pathSize, pathItems)) ? 1 : 0);
+      return OrthancPluginErrorCode_Success;
+    }
+    catch (ORTHANC_PLUGINS_EXCEPTION_CLASS& e)
+    {
+      return static_cast<OrthancPluginErrorCode>(e.GetErrorCode());
+    }
+    catch (...)
+    {
+      return OrthancPluginErrorCode_InternalError;
+    }
+  }
+#endif
+
+  
+#if HAS_ORTHANC_PLUGIN_WEBDAV == 1
+  void IWebDavCollection::Register(const std::string& uri,
+                                   IWebDavCollection& collection)
+  {
+    OrthancPluginErrorCode code = OrthancPluginRegisterWebDavCollection(
+      GetGlobalContext(), uri.c_str(), WebDavIsExistingFolder, WebDavListFolder, WebDavRetrieveFile,
+      WebDavStoreFileCallback, WebDavCreateFolderCallback, WebDavDeleteItemCallback, &collection);
+
+    if (code != OrthancPluginErrorCode_Success)
+    {
+      ORTHANC_PLUGINS_THROW_PLUGIN_ERROR_CODE(code);
     }
   }
 #endif
