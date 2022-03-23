@@ -21,13 +21,13 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancGdcm)
 
-SET(PLUGIN_VERSION "mainline" CACHE STRING "Version of the plugin")
+SET(PLUGIN_VERSION "1.5" CACHE STRING "Version of the plugin")
 
 if (PLUGIN_VERSION STREQUAL "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "hg")
 else()
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.9.4")
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.10.1")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
 endif()
 
