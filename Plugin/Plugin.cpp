@@ -30,12 +30,19 @@
 #include <gdcmFileExplicitFilter.h>
 #include <gdcmImageChangePhotometricInterpretation.h>
 #include <gdcmImageChangeTransferSyntax.h>
+#include <gdcmImageHelper.h>
 #include <gdcmImageReader.h>
 #include <gdcmImageWriter.h>
 #include <gdcmTagKeywords.h>
 #include <gdcmUIDGenerator.h>
 #include <gdcmVersion.h>
-#include <gdcmImageHelper.h>
+
+#define GDCM_VERSION_IS_ABOVE(major, minor, revision)           \
+  (GDCM_MAJOR_VERSION > major ||                                \
+   (GDCM_MAJOR_VERSION == major &&                              \
+    (GDCM_MINOR_VERSION > minor ||                              \
+     (GDCM_MINOR_VERSION == minor &&                            \
+      GDCM_BUILD_VERSION >= revision))))
 
 
 static OrthancPlugins::GdcmDecoderCache  cache_;
@@ -378,19 +385,21 @@ OrthancPluginErrorCode TranscoderCallback(
           // https://groups.google.com/g/orthanc-users/c/xIwrkFRceuE/m/jwxy50djAQAJ
           throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode 1bpp DICOM images");
         }
-        
+
+#if !GDCM_VERSION_IS_ABOVE(3, 0, 9)
         if (reader.GetImage().GetPixelFormat().GetBitsStored() == 16u &&
             syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4)
         {
           /**
            * This is a temporary workaround for issue #513 in GDCM
-           * (will be fixed in GDCM 3.0.9):
+           * that was fixed in GDCM 3.0.9:
            * https://sourceforge.net/p/gdcm/bugs/513/
            * https://groups.google.com/g/orthanc-users/c/xt9hwpj6mlQ
            **/
           throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented,
                                           "Transcoding 16bpp images to 1.2.840.10008.1.2.4.51 might lead to a crash in GDCM");
         }
+#endif
         
         gdcm::ImageChangeTransferSyntax change;
         change.SetTransferSyntax(syntax);

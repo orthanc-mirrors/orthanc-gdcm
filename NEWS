@@ -1,8 +1,9 @@
 Pending changes in the mainline
 ===============================
 
-* Take the configuration "RestrictTransferSyntaxes" into account not 
-  only for Decoding but also for Transcoding.
+* Take the configuration option "RestrictTransferSyntaxes" into
+  account not only for decoding, but also for transcoding
+* Upgrade to GDCM 3.0.10 for static builds
 
 Version 1.4 (2021-07-06)
 ========================
