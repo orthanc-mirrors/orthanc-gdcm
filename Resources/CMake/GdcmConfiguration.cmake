@@ -91,12 +91,6 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
       gdcmjpeg12 gdcmjpeg16 gdcmopenjp2 gdcmzlib gdcmCommon gdcmexpat gdcmuuid)
   endif()
 
-  # if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  #   set(EXTRA_CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES})
-  # else()
-  #   set(EXTRA_CMAKE_FLAGS "")
-  # endif()
-
   include(ExternalProject)
   externalproject_add(GDCM
     URL "${GDCM_URL}"

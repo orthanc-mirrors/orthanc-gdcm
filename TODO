@@ -1,0 +1,4 @@
+Bugs
+----
+- It seems that transcoding from Implicit VR to Explicit VR can lead to errors:
+  https://groups.google.com/g/orthanc-users/c/cCCZpUNMdNU/m/ZwUu-mVcAwAJ
