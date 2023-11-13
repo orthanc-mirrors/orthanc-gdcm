@@ -154,6 +154,8 @@ set_target_properties(OrthancGdcm PROPERTIES
   VERSION ${PLUGIN_VERSION} 
   SOVERSION ${PLUGIN_VERSION})
 
+DefineSourceBasenameForTarget(OrthancGdcm)
+
 install(
   TARGETS OrthancGdcm
   RUNTIME DESTINATION lib    # Destination for Windows
