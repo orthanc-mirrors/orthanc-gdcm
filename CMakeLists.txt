@@ -154,7 +154,9 @@ set_target_properties(OrthancGdcm PROPERTIES
   VERSION ${PLUGIN_VERSION} 
   SOVERSION ${PLUGIN_VERSION})
 
-DefineSourceBasenameForTarget(OrthancGdcm)
+if (COMMAND DefineSourceBasenameForTarget)
+  DefineSourceBasenameForTarget(OrthancGdcm)
+endif()
 
 install(
   TARGETS OrthancGdcm
