@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancGdcm)
 
-SET(PLUGIN_VERSION "mainline" CACHE STRING "Version of the plugin")
+SET(PLUGIN_VERSION "mainline")
 
 if (PLUGIN_VERSION STREQUAL "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
