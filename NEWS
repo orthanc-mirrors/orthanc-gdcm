@@ -1,6 +1,10 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 1.6 (2024-01-04)
+========================
+
 * Upgrade to GDCM 3.0.22 for static builds
 
 
