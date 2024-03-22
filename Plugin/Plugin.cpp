@@ -38,6 +38,8 @@
 #include <gdcmUIDGenerator.h>
 #include <gdcmVersion.h>
 
+#define PLUGIN_NAME "gdcm"
+
 #define GDCM_VERSION_IS_ABOVE(major, minor, revision)           \
   (GDCM_MAJOR_VERSION > major ||                                \
    (GDCM_MAJOR_VERSION == major &&                              \
@@ -521,7 +523,7 @@ extern "C"
         return -1;
       }
 
-      OrthancPluginSetDescription(context, "Decoder/transcoder of medical images using GDCM.");
+      OrthancPlugins::SetDescription(PLUGIN_NAME, "Decoder/transcoder of medical images using GDCM.");
 
       OrthancPlugins::OrthancConfiguration global;
 
@@ -618,7 +620,7 @@ extern "C"
 
   ORTHANC_PLUGINS_API const char* OrthancPluginGetName()
   {
-    return "gdcm";
+    return PLUGIN_NAME;
   }
 
 
