@@ -23,8 +23,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     set(GDCM_URL "https://orthanc.uclouvain.be/downloads/third-party-downloads/gdcm-2.8.9.tar.gz")
     set(GDCM_MD5 "aeb00e0cb5375d454010a72e2e0f6154")
   else()
-    set(GDCM_URL "https://orthanc.uclouvain.be/downloads/third-party-downloads/gdcm-3.0.22.tar.gz")
-    set(GDCM_MD5 "2d5b1e303d0fdd8c3766e14a4567f3c5")
+    set(GDCM_URL "https://orthanc.uclouvain.be/downloads/third-party-downloads/gdcm-3.0.24.tar.gz")
+    set(GDCM_MD5 "b51e20f7a7eaeafecae76b7d4da40481")
   endif()
   
   if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
