@@ -1,7 +1,14 @@
 Pending changes in the mainline
 ===============================
 
-* Upgrade to GDCM 3.0.24 for static builds
+
+Version 1.7 (2024-05-06)
+========================
+
+* Upgrade to GDCM 3.0.24 for static builds. Fixes:
+  - CVE-2024-22373: https://nvd.nist.gov/vuln/detail/CVE-2024-22373
+  - CVE-2024-22391: https://nvd.nist.gov/vuln/detail/CVE-2024-22391
+  - CVE-2024-25569: https://nvd.nist.gov/vuln/detail/CVE-2024-25569
 
 
 Version 1.6 (2024-01-04)
