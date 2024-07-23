@@ -547,17 +547,40 @@ extern "C"
 
         enabled = config.GetBooleanValue(KEY_ENABLE_GDCM, true);
 
-        if (enabled &&
-            config.LookupSetOfStrings(enabledTransferSyntaxes_, KEY_RESTRICT_TRANSFER_SYNTAXES, false))
+        if (enabled)
         {
-          restrictTransferSyntaxes_ = true;
-        
-          for (std::set<std::string>::const_iterator it = enabledTransferSyntaxes_.begin();
-               it != enabledTransferSyntaxes_.end(); ++it)
+          if (config.LookupSetOfStrings(enabledTransferSyntaxes_, KEY_RESTRICT_TRANSFER_SYNTAXES, false))
           {
-            LOG(WARNING) << "Orthanc will use GDCM to decode transfer syntax: " << *it;
+            if (enabledTransferSyntaxes_.size() == 0)
+            {
+              restrictTransferSyntaxes_ = false;
+              LOG(WARNING) << KEY_GDCM << "." << KEY_RESTRICT_TRANSFER_SYNTAXES << " configuration is set but empty, Orthanc will use GDCM to transcode ALL transfer syntaxes.";
+            }
+            else
+            {
+              LOG(WARNING) << KEY_GDCM << "." << KEY_RESTRICT_TRANSFER_SYNTAXES << " configuration is set and not empty, Orthanc will use GDCM to transcode SOME transfer syntaxes:";
+            }
+          }
+          else
+          {
+            LOG(WARNING) << KEY_GDCM << "." << KEY_RESTRICT_TRANSFER_SYNTAXES << " configuration is not set, using default configuration. Orthanc will use GDCM to transcode only J2K transfer syntaxes:";
+            enabledTransferSyntaxes_.insert("1.2.840.10008.1.2.4.90"); // JPEG 2000 Image Compression (Lossless Only)
+            enabledTransferSyntaxes_.insert("1.2.840.10008.1.2.4.91"); // JPEG 2000 Image Compression
+            enabledTransferSyntaxes_.insert("1.2.840.10008.1.2.4.92"); // JPEG 2000 Part 2 Multicomponent Image Compression (Lossless Only)
+            enabledTransferSyntaxes_.insert("1.2.840.10008.1.2.4.93"); // JPEG 2000 Part 2 Multicomponent Image Compression
+          }
+
+          if (enabledTransferSyntaxes_.size() > 0)
+          {
+            restrictTransferSyntaxes_ = true;
+            for (std::set<std::string>::const_iterator it = enabledTransferSyntaxes_.begin();
+                it != enabledTransferSyntaxes_.end(); ++it)
+            {
+              LOG(WARNING) << "Orthanc will use GDCM to decode transfer syntax: " << *it;
+            }
           }
         }
+
 
         unsigned int throttling;
         if (enabled &&
