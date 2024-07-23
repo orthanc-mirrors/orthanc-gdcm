@@ -390,6 +390,13 @@ OrthancPluginErrorCode TranscoderCallback(
           throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode 1bpp DICOM images");
         }
 
+        gdcm::DataSet ds = reader.GetFile().GetDataSet();
+        const gdcm::Tag sfgs(0x5200,0x9229); // SharedFunctionalGroupsSequence
+        if (ds.FindDataElement(sfgs) && ds.GetDataElement(sfgs).IsEmpty())
+        {
+          throw Orthanc::OrthancException(Orthanc::ErrorCode_NotImplemented, "Cannot transcode DICOM images with empty 5200,9229 sequence");
+        }
+ 
 #if !GDCM_VERSION_IS_ABOVE(3, 0, 9)
         if (reader.GetImage().GetPixelFormat().GetBitsStored() == 16u &&
             syntax == gdcm::TransferSyntax::JPEGExtendedProcess2_4)

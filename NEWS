@@ -1,6 +1,9 @@
 Pending changes in the mainline
 ===============================
 
+* Prevent transcoding of DICOM images with empty 
+  SharedFunctionalGroupsSequence (5200,9229), as this might crash GDCM
+
 
 Version 1.7 (2024-05-06)
 ========================
