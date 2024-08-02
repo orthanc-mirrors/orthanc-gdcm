@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancGdcm)
 
-SET(PLUGIN_VERSION "mainline")
+SET(PLUGIN_VERSION "1.8")
 
 if (PLUGIN_VERSION STREQUAL "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
