@@ -20,6 +20,8 @@
 
 
 if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
+  set(GDCM_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/gdcm-static-build)
+
   if (USE_LEGACY_GDCM)
     set(GDCM_URL "https://orthanc.uclouvain.be/downloads/third-party-downloads/gdcm-2.8.9.tar.gz")
     set(GDCM_MD5 "aeb00e0cb5375d454010a72e2e0f6154")
@@ -97,9 +99,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     URL "${GDCM_URL}"
     URL_MD5 "${GDCM_MD5}"
     TIMEOUT 60
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} ${Flags}
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} "-DCMAKE_INSTALL_PREFIX=${GDCM_INSTALL_DIR}" ${Flags}
     ${BUILD_COMMAND}    # Customize "make", only for Linux Standard Base (*)
-    INSTALL_COMMAND ""  # Skip the install step
     )
 
   if(MSVC)
@@ -140,9 +141,10 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
       )
   endif()
 
+  link_directories(${GDCM_INSTALL_DIR}/lib)
+
   ExternalProject_Get_Property(GDCM binary_dir)
   include_directories(${binary_dir}/Source/Common)
-  link_directories(${binary_dir}/bin)
 
   ExternalProject_Get_Property(GDCM source_dir)
   include_directories(
