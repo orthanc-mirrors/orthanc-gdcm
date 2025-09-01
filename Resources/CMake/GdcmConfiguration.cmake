@@ -73,25 +73,25 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
   # Don't build manpages (since gdcm 2.8.4)
   list(APPEND Flags -DGDCM_BUILD_DOCBOOK_MANPAGES=OFF)
 
-  if ("${CMAKE_SYSTEM_VERSION}" STREQUAL "LinuxStandardBase")
-    # Trick to disable the compilation of socket++ by gdcm, which is
+  if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" OR
+      "${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin")
+    # Patch to disable the compilation of socket++ by gdcm, which is
     # incompatible with LSB, but fortunately only required for DICOM
-    # Networking
-    list(APPEND Flags -DGDCM_USE_SYSTEM_SOCKETXX=ON)
-
-    # Detect the number of CPU cores to run "make" with as much
-    # parallelism as possible
-    include(ProcessorCount)
-    ProcessorCount(N)
-    if (NOT N EQUAL 0)
-      set(MAKE_PARALLEL -j${N})
+    # Networking. We don't do this on Windows, as the "patch.exe"
+    # command-line tool will certainly be unavailable. (*)
+    if (USE_LEGACY_GDCM)
+      set(GDCM_PATCH "${CMAKE_SOURCE_DIR}/Resources/CMake/gdcm-2.8.9-no-networking.patch")
+    else()
+      set(GDCM_PATCH "${CMAKE_SOURCE_DIR}/Resources/CMake/gdcm-3.0.24-no-networking.patch")
     endif()
-      
-    # For Linux Standard Base, avoid building incompatible target gdcmMEXD (*)
-    set(BUILD_COMMAND BUILD_COMMAND
-      ${CMAKE_MAKE_PROGRAM} ${MAKE_PARALLEL}
-      gdcmMSFF gdcmcharls gdcmDICT gdcmDSED gdcmIOD gdcmjpeg8
-      gdcmjpeg12 gdcmjpeg16 gdcmopenjp2 gdcmzlib gdcmCommon gdcmexpat gdcmuuid)
+
+    find_program(PATCH_EXECUTABLE patch)
+    if (${PATCH_EXECUTABLE} MATCHES "PATCH_EXECUTABLE-NOTFOUND")
+      message(FATAL_ERROR "Please install the 'patch' standard command-line tool")
+    endif()
+
+    set(PATCH_COMMAND PATCH_COMMAND
+      ${PATCH_EXECUTABLE} -p1 -N -i ${GDCM_PATCH})
   endif()
 
   include(ExternalProject)
@@ -99,8 +99,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     URL "${GDCM_URL}"
     URL_MD5 "${GDCM_MD5}"
     TIMEOUT 60
+    ${PATCH_COMMAND}   # Apply patch to remove networking support (*)
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} "-DCMAKE_INSTALL_PREFIX=${GDCM_INSTALL_DIR}" ${Flags}
-    ${BUILD_COMMAND}    # Customize "make", only for Linux Standard Base (*)
     )
 
   if(MSVC)
