@@ -104,7 +104,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
 
     # https://stackoverflow.com/a/43363395
     # The "--config" option seems not available on old versions of CMake
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install --config ${CMAKE_BUILD_TYPE}
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install # --config ${CMAKE_BUILD_TYPE}
     )
 
   if(MSVC)
