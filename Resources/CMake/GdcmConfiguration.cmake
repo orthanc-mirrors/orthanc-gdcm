@@ -101,6 +101,9 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     TIMEOUT 60
     ${PATCH_COMMAND}   # Apply patch to remove networking support (*)
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} "-DCMAKE_INSTALL_PREFIX=${GDCM_INSTALL_DIR}" ${Flags}
+
+    # https://stackoverflow.com/a/43363395
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install --config ${CMAKE_BUILD_TYPE}
     )
 
   if(MSVC)
@@ -143,16 +146,11 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
 
   link_directories(${GDCM_INSTALL_DIR}/lib)
 
-  ExternalProject_Get_Property(GDCM binary_dir)
-  include_directories(${binary_dir}/Source/Common)
-
-  ExternalProject_Get_Property(GDCM source_dir)
-  include_directories(
-    ${source_dir}/Source/Common
-    ${source_dir}/Source/DataDictionary
-    ${source_dir}/Source/DataStructureAndEncodingDefinition
-    ${source_dir}/Source/MediaStorageAndFileFormat
-    )
+  if (USE_LEGACY_GDCM)
+    include_directories(${GDCM_INSTALL_DIR}/include/gdcm-2.8)
+  else()
+    include_directories(${GDCM_INSTALL_DIR}/include/gdcm-3.0)
+  endif()
 
 else()
   find_package(GDCM REQUIRED)
