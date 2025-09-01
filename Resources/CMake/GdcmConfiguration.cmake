@@ -103,7 +103,8 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} "-DCMAKE_INSTALL_PREFIX=${GDCM_INSTALL_DIR}" ${Flags}
 
     # https://stackoverflow.com/a/43363395
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install --config ${CMAKE_BUILD_TYPE}
+    # The "--config" option seems not available for MSVC
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install # --config ${CMAKE_BUILD_TYPE}
     )
 
   if(MSVC)
