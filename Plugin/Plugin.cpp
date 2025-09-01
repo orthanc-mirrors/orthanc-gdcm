@@ -243,8 +243,8 @@ static void AnswerTranscoded(OrthancPluginMemoryBuffer* transcoded /* out */,
   writer.SetStream(ss);
   if (writer.Write())
   {
-    std::string s = ss.str();
-    OrthancPlugins::MemoryBuffer orthancBuffer(s.empty() ? NULL : s.c_str(), s.size());
+    OrthancPlugins::MemoryBuffer orthancBuffer;
+    orthancBuffer.Assign(ss.str());
     *transcoded = orthancBuffer.Release();
   }
   else
@@ -353,7 +353,8 @@ OrthancPluginErrorCode TranscoderCallback(
         }
         else
         {
-          OrthancPlugins::MemoryBuffer orthancBuffer(buffer, size);
+          OrthancPlugins::MemoryBuffer orthancBuffer;
+          orthancBuffer.Assign(buffer, size);
           *transcoded = orthancBuffer.Release();
         }
         
