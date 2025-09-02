@@ -100,11 +100,12 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     URL_MD5 "${GDCM_MD5}"
     TIMEOUT 60
     ${PATCH_COMMAND}   # Apply patch to remove networking support (*)
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} "-DCMAKE_INSTALL_PREFIX=${GDCM_INSTALL_DIR}" ${Flags}
+    INSTALL_DIR ${GDCM_INSTALL_DIR}
 
-    # https://stackoverflow.com/a/43363395
-    # The "--config" option seems not available on old versions of CMake
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install # --config ${CMAKE_BUILD_TYPE}
+    # A full example about "externalproject_add" with CMake generators and
+    # multi-configuration projects (for Visual Studio and XCode) is available at:
+    # https://github.com/neundorf/CMakeExternalProjectExample
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>/$<CONFIG> -DCMAKE_BUILD_TYPE=$<CONFIG> ${Flags}
     )
 
   if(MSVC)
@@ -145,12 +146,12 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
       )
   endif()
 
-  link_directories(${GDCM_INSTALL_DIR}/lib)
+  link_directories(${GDCM_INSTALL_DIR}/$<CONFIG>/lib)
 
   if (USE_LEGACY_GDCM)
-    include_directories(${GDCM_INSTALL_DIR}/include/gdcm-2.8)
+    include_directories(${GDCM_INSTALL_DIR}/$<CONFIG>/include/gdcm-2.8)
   else()
-    include_directories(${GDCM_INSTALL_DIR}/include/gdcm-3.0)
+    include_directories(${GDCM_INSTALL_DIR}/$<CONFIG>/include/gdcm-3.0)
   endif()
 
 else()
