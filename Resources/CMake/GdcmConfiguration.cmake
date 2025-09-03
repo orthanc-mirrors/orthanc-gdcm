@@ -48,12 +48,11 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     set(AdditionalCFlags "-Doff64_t=off_t") 
     set(AdditionalCxxFlags ${AdditionalCFlags})
   elseif (MSVC)
-    if (USE_LEGACY_GDCM)
-      # In this case, there is a mismatch between the CRT that is used
-      # by the GDCM project ("/MT") and by the Orthanc plugin ("/MD")
-      set(AdditionalCFlags "/MD")
-      set(AdditionalCxxFlags ${AdditionalCFlags})
-    endif()
+    # In the case of "USE_LEGACY_GDCM", there is a mismatch between
+    # the CRT that is used by the GDCM project ("/MT") and by the
+    # Orthanc plugin ("/MD"). We clarify by forcing to "/MD".
+    set(AdditionalCFlags "/MD")
+    set(AdditionalCxxFlags ${AdditionalCFlags})
   endif()
   
   set(Flags
