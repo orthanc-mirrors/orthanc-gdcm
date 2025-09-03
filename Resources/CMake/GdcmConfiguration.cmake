@@ -113,12 +113,6 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
     # multi-configuration projects (for Visual Studio and XCode) is available at:
     # https://github.com/neundorf/CMakeExternalProjectExample
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>/$<CONFIG> -DCMAKE_BUILD_TYPE=$<CONFIG> ${Flags}
-
-    # Logging
-    LOG_PATCH 1
-    LOG_CONFIGURE 1
-    LOG_BUILD 1
-    LOG_INSTALL 1
     )
 
   if(MSVC)
